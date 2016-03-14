@@ -95,6 +95,7 @@ Response.prototype.end = function(){
 	this.connection.writeMessage(msg);
 	this.connection.done();
 	//Clean up the request and responses
+	this.req.close();
 	this.close();
 }
 
