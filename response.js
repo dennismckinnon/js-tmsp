@@ -17,7 +17,7 @@ function Response(connection, req){
 	this.method = types.methodLookup[req.type].toUpperCase()
 
 	//Add listener for end event on connection and emit a close event as a result
-	this.connection.socket.on('end', endListener())
+	this.connection.socket.on('end', this.endListener)
 }
 util.inherits(Response, EventEmitter);
 
@@ -27,7 +27,7 @@ Response.prototype.endListener = function(){
 
 Response.prototype.close = function(){
 	this.finished = true;
-	this.connection.socket.removeListener('end', endListener)
+	this.connection.socket.removeListener('end', this.endListener)
 	this.emit('close')
 }
 
