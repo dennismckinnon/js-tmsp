@@ -28,12 +28,19 @@ Response.prototype.endListener = function(){
 Response.prototype.close = function(){
 	this.finished = true;
 	this.connection.socket.removeListener('end', this.endListener)
+	this.connection.flush()
 	this.emit('close')
 }
 
 //For writing and then ending the response
 Response.prototype.send = function(code, data, log, error){
 	var self = this;
+
+	//If response already closed don't allow it to write
+	if(this.finished){
+		console.log("ALREADY CLOSED")
+		return
+	}
 
 	this.write(code, data, log, error)
 	console.log("Sending")
@@ -43,6 +50,12 @@ Response.prototype.send = function(code, data, log, error){
 }
 
 Response.prototype.err = function(err){
+	//If response already closed don't allow it to write
+	if(this.finished){
+		console.log("ALREADY CLOSED")
+		return
+	}
+
 	var errMsg;
 	if (err instanceof Error){
 		errMsg = err.message;
@@ -54,6 +67,12 @@ Response.prototype.err = function(err){
 }
 
 Response.prototype.write = function(code, data, log, error){
+	//If response already closed don't allow it to write
+	if(this.finished){
+		console.log("ALREADY CLOSED")
+		return
+	}
+
 	//Write the response fields
 	if (typeof code === 'object'){
 		//The information was passed as an object -> unpack it
@@ -94,6 +113,12 @@ Response.prototype.write = function(code, data, log, error){
 
 //Calls the connections writer to 
 Response.prototype.end = function(){
+	//If response already closed don't allow it to write
+	if(this.finished){
+		console.log("ALREADY CLOSED")
+		return
+	}
+
 	var msg = new types.Response(this.res);
 	this.connection.writeMessage(msg);
 	this.connection.done();

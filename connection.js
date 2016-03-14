@@ -75,7 +75,7 @@ Connection.prototype.writeMessage = function(msg) {
 
 Connection.prototype.flush = function() {
 	console.log("flushing")
-	var n = this.socket.write(this.sendBuf);
+//	var n = this.socket.write(this.sendBuf);
 	this.sendBuf = new Buffer(0);
 	console.log("done flushing")
 }
