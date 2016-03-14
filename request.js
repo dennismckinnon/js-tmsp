@@ -42,3 +42,13 @@ Request.prototype.close = function(){
 	this.connection.socket.removeListener('end', this.endListener)
 	this.emit('close')
 }
+
+Request.prototype.print = function(){
+	var cleanObj = {}
+	for (key in this){
+		if(key != 'connection'){
+			cleanObj[key] = this[key];
+		}
+	}
+	console.log(cleanObj)
+}

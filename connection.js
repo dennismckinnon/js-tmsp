@@ -34,6 +34,7 @@ Connection.prototype.appendData = function(bytes) {
 	}
 	var r = new wire.Reader(this.recvBuf);
 	var msgBytes;
+	//TODO if this fails we should clean up properly
 	try {
 		msgBytes = r.readByteArray();
 	} catch(e) {

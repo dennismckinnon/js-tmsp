@@ -41,6 +41,7 @@ Response.prototype.send = function(code, data, log, error){
 }
 
 Response.prototype.err = function(err){
+	var errMsg;
 	if (err instanceof Error){
 		errMsg = err.message;
 	} else {
@@ -101,6 +102,16 @@ Response.prototype.end = function(){
 
 Response.prototype.flush = function(){
 	this.connection.flush();
+}
+
+Response.prototype.print = function(){
+	var cleanObj = {}
+	for (key in this){
+		if(key != 'connection'){
+			cleanObj[key] = this[key];
+		}
+	}
+	console.log(cleanObj)
 }
 
 module.exports = Response;
