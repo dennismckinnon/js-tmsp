@@ -2,6 +2,9 @@ var wire = require("js-wire");
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 
+var Request = require('./request')
+var Response = require('./response') 
+
 var maxWriteBufferLength = 4096; // Any more and flush
 
 function Connection(socket, msgCb) {

@@ -2,9 +2,6 @@ var util = require('util');
 var net = require("net");
 var EventEmitter = require('events').EventEmitter;
 
-var Request = require('./request')
-var Response = require('./response') 
-
 var Connection = require("./connection").Connection;
 
 function createServer(options){
