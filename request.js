@@ -3,6 +3,10 @@ var util = require('util');
 var types = require("./types");
 var EventEmitter = require('events').EventEmitter;
 
+function endListener(req){
+	req.close()
+}
+
 function Request(connection, reqBytes){
 	this.req = types.Request.decode(reqBytes);
 
@@ -26,12 +30,15 @@ function Request(connection, reqBytes){
 	EventEmitter.call(this);
 
 	//Add listener for end event on connection and emit a close event as a result
-	this.connection.socket.on('end', function(){
-		this.finished = true;
-		this.emit('close')
-	})
+	this.connection.socket.on('end', endListener(this))
 
 }
 util.inherits(Request, EventEmitter);
 
 module.exports = Request;
+
+Request.prototype.close = function(){
+	this.finished = true;
+	this.connection.socket.removeListener('end', endListener)
+	this.emit('close')
+}
