@@ -1,13 +1,8 @@
 var util = require('util');
 var types = require("./types");
 var EventEmitter = require('events').EventEmitter;
-var assert = require('assert-plus');
-
 
 function Response(connection, req){
-	assert.object(connection, 'connection')
-	assert.object(req, 'req')
-
 	var self = this;
 
 	EventEmitter.call(this);

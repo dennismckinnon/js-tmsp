@@ -13,24 +13,20 @@ function createServer(options){
 
 function Server(options){
 
-	//What do I do with the options??
-	this.server = net.createServer()
+	this.server = net.createServer(options)
 
 	EventEmitter.call(this);
 
 	var self = this;
 
+	//TODO handle multiple requests coming from same connection
 	this.server.on('connection', function onConnection(socket) {
 		socket.name = socket.remoteAddress + ":" + socket.remotePort;
-		console.log("new connection from", socket.name);
-
 		//Construct the req and res objects
 
-		//Get bytes and decode them
-		var conn = new Connection(socket, function(reqBytes, cb) {
-			var req = new Request(conn, reqBytes)
-			var res = new Response(conn, req)
-
+		//Process the connection, forward the emitted request events
+		var conn = new Connection(socket)
+		conn.on('request', function(req, res){
 			self.emit('request', req, res)
 		})
 	})
