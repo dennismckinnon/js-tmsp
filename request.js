@@ -4,7 +4,7 @@ var types = require("./types");
 var EventEmitter = require('events').EventEmitter;
 
 var endListener = function(req){
-	res.close()
+	req.close()
 }
 
 function Request(connection, reqBytes){

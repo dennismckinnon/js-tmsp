@@ -2,7 +2,7 @@ var util = require('util');
 var types = require("./types");
 var EventEmitter = require('events').EventEmitter;
 
-var endListener = function(req){
+var endListener = function(res){
 	res.close()
 }
 
