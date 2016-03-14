@@ -25,7 +25,7 @@ function Connection(socket, msgCb) {
 	});
 }
 
-util.inherits(Request, EventEmitter);
+util.inherits(Connection, EventEmitter);
 
 Connection.prototype.appendData = function(bytes) {
 	var self = this;
