@@ -1,91 +1,47 @@
+var util = require('util');
 var net = require("net");
-var types = require("./types");
+var EventEmitter = require('events').EventEmitter;
+
+var Request = require('./request')
+var Response = require('./response') 
+
 var Connection = require("./connection").Connection;
 
-// Takes an application and handles TMSP connection
-// which invoke methods on the app
-function Server(app) {
-  // set the app for the socket handler
-  this.app = app;
-
-  // create a server by providing callback for 
-  // accepting new connection and callbacks for 
-  // connection events ('data', 'end', etc.)
-  this.createServer();
+function createServer(options){
+	return new Server(options)
 }
 
-Server.prototype.createServer = function() {
-  var app = this.app;
+function Server(options){
 
-  // Define the socket handler
-  this.server = net.createServer(function(socket) {
-    socket.name = socket.remoteAddress + ":" + socket.remotePort;
-    console.log("new connection from", socket.name);
+	//What do I do with the options??
+	this.server = net.createServer()
 
-    var conn = new Connection(socket, function(reqBytes, cb) {
-      var req = types.Request.decode(reqBytes);
-      var msgType = req.type;
+	EventEmitter.call(this);
 
-      // Special messages.
-      // NOTE: msgs are length prefixed
-      if (msgType == types.MessageType.Flush) {
-        var res = new types.Response({
-          type: msgType,
-        });
-        conn.writeMessage(res);
-        conn.flush();
-        return cb();
-      } else if (req.type == types.MessageType.Echo) {
-        var res = new types.Response({
-          type: msgType,
-          data: req.data,
-        });
-        conn.writeMessage(res);
-        return cb();
-      }
+	var self = this;
 
-      // Make callback for apps to pass result.
-      var resCb = respondOnce(function(resObj) {
-        // Convert strings to utf8
-        if (typeof resObj.data == "string") {
-          resObj.data = new Buffer(resObj.data);
-        }
-        // Response type is always the same as req type
-        resObj.type = msgType;
-        var res = new types.Response(resObj);
-        conn.writeMessage(res);
-        cb(); // Tells Connection that we're done responding.
-      });
+	this.server.on('connection', function onConnection(socket) {
+		socket.name = socket.remoteAddress + ":" + socket.remotePort;
+		console.log("new connection from", socket.name);
 
-      // Call app function
-      var reqMethod = types.reqMethodLookup[msgType];
-      if (!reqMethod) {
-        throw "Unexpected request type "+reqType;
-      }
-      var res = app[reqMethod].call(app, req, resCb);
-      if (res != undefined) {
-        console.log("Message handler shouldn't return anything!");
-      }
+		//Construct the req and res objects
 
-    });
-  });
+		//Get bytes and decode them
+		var conn = new Connection(socket, function(reqBytes, cb) {
+			var req = new Request(conn, reqBytes)
+			var res = new Response(conn, req)
+
+			self.emit('request', req, res)
+		})
+	})
 }
+util.inherits(Server, EventEmitter);
 
-// Wrap a function to only be called once.
-var respondOnce = function(f) {
-  var ran = false;
-  return function() {
-    if (ran) {
-      console.log("Error: response was already written");
-      console.log("arguments", arguments);
-      return
-    } else {
-      ran = true;
-    }
-    return f.apply(this, arguments);
-  };
-};
+Server.prototype.listen = function(){
+	this.server.listen.apply(this.server, arguments)
+}
 
 module.exports = {
-  Server: Server,
-};
+	Server: Server,
+	createServer: createServer
+}

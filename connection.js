@@ -37,15 +37,9 @@ Connection.prototype.appendData = function(bytes) {
   this.recvBuf = r.buf.slice(r.offset);
   this.waitingResult = true;
   this.socket.pause();
+
   try {
-    this.msgCb(msgBytes, function() {
-      // This gets called after msg handler is finished with response.
-      conn.waitingResult = false;
-      conn.socket.resume();
-      if (conn.recvBuf.length > 0) {
-        conn.appendData("");
-      }
-    });
+    this.msgCb(msgBytes);
   } catch(e) {
     if (e.stack) {
       console.log("FATAL ERROR STACK: ", e.stack);
@@ -53,6 +47,16 @@ Connection.prototype.appendData = function(bytes) {
     console.log("FATAL ERROR: ", e);
   }
 };
+
+
+//This gets called after msg handler is finished with response.
+Connection.prototype.done = function(){
+  this.waitingResult = false;
+  this.socket.resume();
+  if (this.recvBuf.length > 0) {
+    this.appendData("");
+  }
+}
 
 Connection.prototype.writeMessage = function(msg) {
   var msgBytes = msg.encode().toBuffer();
