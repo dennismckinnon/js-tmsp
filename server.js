@@ -20,10 +20,11 @@ function Server(options){
 	this.server.on('connection', function onConnection(socket) {
 		socket.name = socket.remoteAddress + ":" + socket.remotePort;
 		//Construct the req and res objects
-
+		console.log("new Connection")
 		//Process the connection, forward the emitted request events
 		var conn = new Connection(socket)
 		conn.on('request', function(req, res){
+			console.log("new Request!")
 			self.emit('request', req, res)
 		})
 	})
