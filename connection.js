@@ -19,12 +19,6 @@ function Connection(socket, msgCb) {
 	// Handle TMSP requests.
 	socket.on('data', function(data) {
 		self.appendData(data);
-		//Should emit a new request event... but with the request object
-	});
-	socket.on('end', function() {
-		//This should emit an event
-		console.log("connection ended");
-		self.emit('close');
 	});
 }
 
