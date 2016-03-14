@@ -107,7 +107,7 @@ Response.prototype.flush = function(){
 Response.prototype.print = function(){
 	var cleanObj = {}
 	for (key in this){
-		if(key != 'connection'){
+		if(key != 'connection' && key != 'domain'){
 			cleanObj[key] = this[key];
 		}
 	}
