@@ -49,7 +49,7 @@ Connection.prototype.appendData = function(bytes) {
 	this.waitingResult = true;
 	this.socket.pause();
 
-	var req = new Request(this, reqBytes);
+	var req = new Request(this, msgBytes);
 	var res = new Response(this, req);
 	this.emit('request', req, res);
 };
