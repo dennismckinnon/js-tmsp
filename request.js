@@ -26,7 +26,7 @@ function Request(connection, reqBytes){
 	EventEmitter.call(this);
 
 	//Add listener for end event on connection and emit a close event as a result
-	this.connection.socket.on('end', endListener(this))
+	this.connection.socket.on('end', endListener())
 
 }
 util.inherits(Request, EventEmitter);
