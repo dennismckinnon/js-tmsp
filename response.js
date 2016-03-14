@@ -36,6 +36,8 @@ Response.prototype.send = function(code, data, log, error){
 	var self = this;
 
 	this.write(code, data, log, error)
+	console.log("Sending")
+	console.log(this.res)
 
 	this.end()
 }
