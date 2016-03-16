@@ -31,8 +31,8 @@
   "_requiredBy": [
     "/"
   ],
-  "_resolved": "git://github.com/dennismckinnon/js-tmsp.git#5d9897830bea873e3b55d5a6da201fb104cbb62c",
-  "_shasum": "eb2c635e3f90048f773882270532174659a60c49",
+  "_resolved": "git://github.com/dennismckinnon/js-tmsp.git#5aa561df4823f4636e787d250494428a062bb141",
+  "_shasum": "57cf6442f618d2b8335148c1aed0f5dd699a26b5",
   "_shrinkwrap": null,
   "_spec": "js-tmsp@github:dennismckinnon/js-tmsp#generalize",
   "_where": "/home/dennis/gotesting/src/github.com/dennismckinnon/spearmint",

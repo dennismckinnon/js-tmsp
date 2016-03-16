@@ -1,4 +1,5 @@
 var util = require('util');
+var wire = require("js-wire");
 var types = require("./types");
 var uuid = require('node-uuid');
 var EventEmitter = require('events').EventEmitter;
@@ -6,45 +7,51 @@ var EventEmitter = require('events').EventEmitter;
 var doneListener;
 var closeListener;
 
-function Response(connection, req){
+function Response(req){
 	var self = this;
 
 	EventEmitter.call(this);
 
-	this.connection = connection;
+	//Is there really any reason to attach a socket separate from
+	//response creation?
+	this.socket = null;
 	this.req = req;
 	this.finished = false;
 
 	//Response fields
 	this.res = {};
 	this.res.type = req.type;
+
+	//Response data
+	this.type = req.type;
 	this.method = req.method;
 
 	this.uuid = uuid.v4();
-
-	//TODO move the socket into the response for direct writing
-	doneListener = function(reqid){
-		//Use the uuid to filter and ensure the correct request closes
-		if(self.uuid == reqid){
-			self.close()
-		}
-	}
-
-	closeListener = function(){
-		self.close()
-	}
-
-	//Add listener for end event on connection and emit a close event as a result
-	this.connection.on('done', doneListener)
-	this.connection.socket.on('close', closeListener)
 }
 util.inherits(Response, EventEmitter);
 
+function onServerResponseClose(){
+	this.close()
+}
+
+Response.prototype.assignSocket = function(socket){
+	this.socket = socket;
+	socket.on('close', onServerResponseClose)
+}
+
 Response.prototype.close = function(){
 	this.finished = true;
-	this.connection.socket.removeListener('close', closeListener)
-	this.connection.removeListener('done', doneListener)
+	this.socket.removeListener('close', onServerResponseClose)
 	this.emit('close')
+}
+
+Response.prototype.destroy = function(error){
+	if (this.socket)
+		this.socket.destroy(error);
+	else
+		this.once('socket', function(socket) {
+	  		socket.destroy(error);
+		});
 }
 
 //For writing and then ending the response
@@ -79,6 +86,7 @@ Response.prototype.err = function(err){
 	this.send({code: types.CodeType.InternalError, error: errMsg})
 }
 
+//TODO smarter writing
 Response.prototype.write = function(code, data, log, error){
 	//If response already closed don't allow it to write
 	if(this.finished){
@@ -124,7 +132,7 @@ Response.prototype.write = function(code, data, log, error){
 }
 
 
-//Calls the connections writer to 
+//Writes to socket and closes this response
 Response.prototype.end = function(){
 	//If response already closed don't allow it to write
 	if(this.finished){
@@ -132,23 +140,15 @@ Response.prototype.end = function(){
 		return
 	}
 
+	//TODO write simple write stream to pipe into socket to avoid this mess
 	var msg = new types.Response(this.res);
-	this.connection.writeMessage(msg);
-	this.connection.done(this.uuid);
-}
-
-Response.prototype.flush = function(){
-	this.connection.flush();
-}
-
-Response.prototype.print = function(){
-	var cleanObj = {}
-	for (key in this){
-		if(key != 'connection' && key != 'domain'){
-			cleanObj[key] = this[key];
-		}
-	}
-	console.log(cleanObj)
+	var msgBytes = msg.encode().toBuffer();
+	var msgLength = wire.uvarintSize(msgBytes.length);
+	var buf = new Buffer(1+msgLength+msgBytes.length);
+	var w = new wire.Writer(buf);
+	w.writeByteArray(msgBytes); // TODO technically should be writeVarint
+	this.socket.write(w.getBuffer())
+	this.close()
 }
 
 module.exports = Response;

@@ -39,7 +39,6 @@ readMsg = function(buf) {
 
 tmspReader.prototype._transform = function(chunk, encoding, done) {
   this.inBuffer = Buffer.concat([this.inBuffer, chunk]);
-  console.log(chunk)
   var chunks = [];
 
   //Pull out as many complete requests as possible
