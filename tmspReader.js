@@ -15,30 +15,47 @@ function tmspReader(options) {
 }
 
 readMsg = function(buf) {
+  msg = {
+    fullLength: 0,
+    Length: 0,
+    couldRead: false,
+    fullBytes: new Buffer(0),
+    bytes: new Buffer(0),
+    remainder: new Buffer(0)
+  }
+
+  //check we can read the first byte
   if(buf.length != 0){
     var msg = {}
     var vLen = buf.readUInt8();
-    var v = 0;
-    for (var i = 1; i < vLen+1; i++) {
-      var next = buf.readUInt8(i);
-      v = v * 256 + next;
-    }
 
-    msg.fullLength = v+vLen+1;
-    msg.Length = v;
-    msg.couldRead = (buf.length >= msg.fullLength)
-    msg.fullBytes = buf.slice(0, msg.fullLength)
-    msg.bytes = buf.slice(vLen+1, msg.fullLength)
-    msg.remainder = buf.slice(msg.fullLength)
-    return msg;
-  } else {
-    return {fullLength:0, Length:0, couldRead:false, bytes: new Buffer(0), remainder: new Buffer(0)}
+    //Check we can read the next Vlen bytes
+    if (buf.length >= vLen +1){
+      var v = 0;
+      for (var i = 1; i < vLen+1; i++) {
+        var next = buf.readUInt8(i);
+        v = v * 256 + next;
+      }
+
+      //Check we have enough bytes to finish reading
+      if (buf.length >= v + vLen + 1){
+        msg.fullLength = v+vLen+1;
+        msg.Length = v;
+        msg.couldRead = true
+        msg.fullBytes = buf.slice(0, msg.fullLength)
+        msg.bytes = buf.slice(vLen+1, msg.fullLength)
+        msg.remainder = buf.slice(msg.fullLength)
+      }
+    }
   }
+
+  return msg;
 }
 
 
 tmspReader.prototype._transform = function(chunk, encoding, done) {
   this.inBuffer = Buffer.concat([this.inBuffer, chunk]);
+  console.log(chunk)
   var chunks = [];
 
   //Pull out as many complete requests as possible
@@ -123,6 +140,9 @@ function Request(reqBytes){
   } catch (e) {
     err = e;
   }
+
+  console.log(parsed)
+//  console.log(types)
 
   //Check for request errors here
   if(err){
