@@ -100,6 +100,13 @@ tmspReader.prototype.read = function(){
   }
 }
 
+tmspReader.prototype.abort = function(){
+  //Clear the queue
+  //requests don't have a connection to the socket so this make it cleaner
+  this.queue = new LinkedList;
+  this.emit('empty')
+}
+
 
 module.exports = tmspReader;
 

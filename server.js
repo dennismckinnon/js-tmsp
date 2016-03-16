@@ -46,11 +46,29 @@ function connectionListener(socket){
 		socket.end;
 		return;
 	}
-	console.log("Hey")
 
 	var parser = new tmspReader();
 	socket.pipe(parser)
 
+
+	//TODO implement 
+
+	socket.addListener('error', socketOnError);
+	socket.addListener('close', serverSocketCloseListener);
+/*
+	socket.on('end', socketOnEnd);
+	socket.on('data', socketOnData);
+*/
+
+	function socketOnError(err){
+		this.removeListener('error', socketOnError);
+		this.destroy(err);
+	}
+
+	function serverSocketCloseListener(){
+		console.log("Connection closed")
+		parser.abort()
+	}
 
 	//should handle aborting rest of requests when connection is lost.
 	//gracefully
@@ -65,18 +83,12 @@ function connectionListener(socket){
 	//This is the request processor loop using events to trigger
 	//the next request in the Queue.
 	function runNextRequest(){
-		console.log("running next")
 		var self = this;
 
 		var req = parser.read()
 		if (req){
 			var res = new Response(req);
-			console.log("Response made")
 			res.assignSocket(socket)
-
-			console.log(req)
-			console.log(req.method)
-			console.log(res.method)
 
 			//No matter how the response object gets closed this
 			//will trigger the next one if there is one.
@@ -97,7 +109,6 @@ function connectionListener(socket){
   	function onReadable(){
 		self.work = true;
 		//If not working get started!
-		console.log("Stop Slacking off!")
 		if(!self.running){
 			runNextRequest.call(self);
 		}
@@ -105,27 +116,10 @@ function connectionListener(socket){
 
 	function onEmpty(){
 		self.work = false
-		console.log("Empty!")
 	}
 
-	socket.on('end', function(){
-		console.log("END FOUND!")
-	})
-
-
-//	socket.on('end', this.processRequests.bind(this))
-	
-	socket.on('close', function(haderr){console.log("Closing"); console.log(haderr)})
-	socket.on('drain', function(){console.log("sendBuffer empty")})
-  
+	socket.on('close', function(haderr){console.log("Closing"); console.log(haderr)})  
 }
-
-//TODO this needs to run in the connection listener scope because it needs the parser
-//and the socket
-
-
-
-
 
 module.exports = {
 	Server: Server,

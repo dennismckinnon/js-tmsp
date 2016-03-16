@@ -131,6 +131,15 @@ Response.prototype.write = function(code, data, log, error){
 	this.res.error = error.toString()
 }
 
+function formatResponseBytes(res){
+	var msg = new types.Response(res);
+	var msgBytes = msg.encode().toBuffer();
+	var msgLength = wire.uvarintSize(msgBytes.length);
+	var buf = new Buffer(1+msgLength+msgBytes.length);
+	var w = new wire.Writer(buf);
+	w.writeByteArray(msgBytes); // TODO technically should be writeVarint	
+	return w.getBuffer()
+}
 
 //Writes to socket and closes this response
 Response.prototype.end = function(){
@@ -140,14 +149,13 @@ Response.prototype.end = function(){
 		return
 	}
 
-	//TODO write simple write stream to pipe into socket to avoid this mess
-	var msg = new types.Response(this.res);
-	var msgBytes = msg.encode().toBuffer();
-	var msgLength = wire.uvarintSize(msgBytes.length);
-	var buf = new Buffer(1+msgLength+msgBytes.length);
-	var w = new wire.Writer(buf);
-	w.writeByteArray(msgBytes); // TODO technically should be writeVarint
-	this.socket.write(w.getBuffer())
+	//I don't think waiting on 'drain' is necessary because these are coming in
+	//sequentially and being processed sequentially from a single source
+	//so the buffer at the read end should be sufficient.
+	//However a buffered writer object might be good regardless
+	//TODO think
+	resBytes = formatResponseBytes(this.res)
+	this.socket.write(resBytes)
 	this.close()
 }
 
