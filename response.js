@@ -1,6 +1,10 @@
 var util = require('util');
 var types = require("./types");
+var uuid = require('node-uuid');
 var EventEmitter = require('events').EventEmitter;
+
+var doneListener;
+var closeListener;
 
 function Response(connection, req){
 	var self = this;
@@ -14,21 +18,32 @@ function Response(connection, req){
 	//Response fields
 	this.res = {};
 	this.res.type = req.type;
-	this.method = types.methodLookup[req.type].toUpperCase()
+	this.method = req.method;
+
+	this.uuid = uuid.v4();
+
+	//TODO move the socket into the response for direct writing
+	doneListener = function(reqid){
+		//Use the uuid to filter and ensure the correct request closes
+		if(self.uuid == reqid){
+			self.close()
+		}
+	}
+
+	closeListener = function(){
+		self.close()
+	}
 
 	//Add listener for end event on connection and emit a close event as a result
-	this.connection.socket.on('end', this.endListener)
+	this.connection.on('done', doneListener)
+	this.connection.socket.on('close', closeListener)
 }
 util.inherits(Response, EventEmitter);
 
-Response.prototype.endListener = function(){
-	this.close();
-}
-
 Response.prototype.close = function(){
 	this.finished = true;
-	this.connection.socket.removeListener('end', this.endListener)
-	this.connection.flush()
+	this.connection.socket.removeListener('close', closeListener)
+	this.connection.removeListener('done', doneListener)
 	this.emit('close')
 }
 
@@ -38,21 +53,19 @@ Response.prototype.send = function(code, data, log, error){
 
 	//If response already closed don't allow it to write
 	if(this.finished){
-		console.log("ALREADY CLOSED")
+		console.log("ALREADY CLOSED1")
 		return
 	}
 
 	this.write(code, data, log, error)
-	console.log("Sending")
-	console.log(this.res)
-
 	this.end()
 }
 
 Response.prototype.err = function(err){
+	console.log(err)
 	//If response already closed don't allow it to write
 	if(this.finished){
-		console.log("ALREADY CLOSED")
+		console.log("ALREADY CLOSED2")
 		return
 	}
 
@@ -69,7 +82,7 @@ Response.prototype.err = function(err){
 Response.prototype.write = function(code, data, log, error){
 	//If response already closed don't allow it to write
 	if(this.finished){
-		console.log("ALREADY CLOSED")
+		console.log("ALREADY CLOSED3")
 		return
 	}
 
@@ -115,16 +128,13 @@ Response.prototype.write = function(code, data, log, error){
 Response.prototype.end = function(){
 	//If response already closed don't allow it to write
 	if(this.finished){
-		console.log("ALREADY CLOSED")
+		console.log("ALREADY CLOSED4")
 		return
 	}
 
 	var msg = new types.Response(this.res);
 	this.connection.writeMessage(msg);
-	this.connection.done();
-	//Clean up the request and responses
-	this.req.close();
-	this.close();
+	this.connection.done(this.uuid);
 }
 
 Response.prototype.flush = function(){

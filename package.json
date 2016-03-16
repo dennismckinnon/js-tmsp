@@ -1,10 +1,55 @@
 {
-  "name": "js-tmsp",
-  "version": "0.0.9",
-  "description": "Javascript TMSP libraries",
-  "main": "index.js",
+  "_args": [
+    [
+      "js-tmsp@github:dennismckinnon/js-tmsp#generalize",
+      "/home/dennis/gotesting/src/github.com/dennismckinnon/spearmint"
+    ]
+  ],
+  "_from": "dennismckinnon/js-tmsp#generalize",
+  "_id": "js-tmsp@0.0.9",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/js-tmsp",
+  "_phantomChildren": {},
+  "_requested": {
+    "hosted": {
+      "directUrl": "https://raw.githubusercontent.com/dennismckinnon/js-tmsp/generalize/package.json",
+      "gitUrl": "git://github.com/dennismckinnon/js-tmsp.git#generalize",
+      "httpsUrl": "git+https://github.com/dennismckinnon/js-tmsp.git#generalize",
+      "shortcut": "github:dennismckinnon/js-tmsp#generalize",
+      "ssh": "git@github.com:dennismckinnon/js-tmsp.git#generalize",
+      "sshUrl": "git+ssh://git@github.com/dennismckinnon/js-tmsp.git#generalize",
+      "type": "github"
+    },
+    "name": "js-tmsp",
+    "raw": "js-tmsp@github:dennismckinnon/js-tmsp#generalize",
+    "rawSpec": "github:dennismckinnon/js-tmsp#generalize",
+    "scope": null,
+    "spec": "github:dennismckinnon/js-tmsp#generalize",
+    "type": "hosted"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "git://github.com/dennismckinnon/js-tmsp.git#5d9897830bea873e3b55d5a6da201fb104cbb62c",
+  "_shasum": "eb2c635e3f90048f773882270532174659a60c49",
+  "_shrinkwrap": null,
+  "_spec": "js-tmsp@github:dennismckinnon/js-tmsp#generalize",
+  "_where": "/home/dennis/gotesting/src/github.com/dennismckinnon/spearmint",
   "dependencies": {
-    "protobufjs": "~5.0.1",
-    "js-wire": "~0.0.3"
-  }
+    "js-wire": "~0.0.3",
+    "node-uuid": "^1.4.7",
+    "protobufjs": "~5.0.1"
+  },
+  "description": "Javascript TMSP libraries",
+  "devDependencies": {},
+  "gitHead": "5d9897830bea873e3b55d5a6da201fb104cbb62c",
+  "main": "index.js",
+  "name": "js-tmsp",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "version": "0.0.9"
 }
